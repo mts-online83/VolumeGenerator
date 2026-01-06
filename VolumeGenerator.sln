@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36327.8 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VolumeGenerator", "VolumeGenerator\VolumeGenerator.csproj", "{7621442A-DE9A-420F-8B0B-529D10C6085C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VolumeGeneratorApp", "VolumeGeneratorApp\VolumeGeneratorApp.csproj", "{6D168140-9D17-4A54-9AC4-EB8BC7020F73}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7621442A-DE9A-420F-8B0B-529D10C6085C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7621442A-DE9A-420F-8B0B-529D10C6085C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7621442A-DE9A-420F-8B0B-529D10C6085C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7621442A-DE9A-420F-8B0B-529D10C6085C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D168140-9D17-4A54-9AC4-EB8BC7020F73}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D168140-9D17-4A54-9AC4-EB8BC7020F73}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D168140-9D17-4A54-9AC4-EB8BC7020F73}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D168140-9D17-4A54-9AC4-EB8BC7020F73}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {52E73A5E-5D30-4B52-90FB-57E03F964A95}
+	EndGlobalSection
+EndGlobal
