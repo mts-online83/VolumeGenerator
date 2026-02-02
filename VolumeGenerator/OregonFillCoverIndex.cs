@@ -55,10 +55,12 @@ namespace VolumeGenerator
 
                 // Open, update, save to new name
                 var doc = new Document(vol.OutputPath);
-                doc.UpdatePageLayout();
-
+                
                 UpdateTranscriptHeadingsForVolume(doc, vol, totalVolumes);
+                UpdateIndexVolumePlaceholderForVolume(doc, vol);
 
+                doc.UpdatePageLayout();
+                doc.UpdateFields();
                 doc.Save(newPath, SaveFormat.Docx);
 
                 // Optional: delete old "Volume_#.docx"
@@ -151,6 +153,92 @@ namespace VolumeGenerator
                 builder.Write(lineText);
             }            
         }
+
+        private void UpdateIndexVolumePlaceholderForVolume(Document volumeDoc, VolumeInfo volume)
+        {
+            var collector = new LayoutCollector(volumeDoc);
+            var builder = new DocumentBuilder(volumeDoc);
+
+            // We’ll need hearing info for mapping:
+            // for each hearing in this volume, we know:
+            // - StartPage/EndPage (global)
+            // - SortDate (date)
+            foreach (var hearing in volume.Entries.OrderBy(e => e.StartPage))
+            {
+                // Convert global pages -> local pages in this volume doc
+                int localStartPage = hearing.StartPage - volume.StartPage + 1;
+
+                // Your VBA checked: INDEX is on start page +1 or +2
+                int idxPage1 = localStartPage + 1;
+                int idxPage2 = localStartPage + 2;
+
+                // Find a paragraph that contains "INDEX" on one of those pages
+                Paragraph? indexPara = null;
+
+                foreach (Paragraph p in volumeDoc.GetChildNodes(NodeType.Paragraph, true))
+                {
+                    string t = p.ToString(SaveFormat.Text).Trim();
+
+                    if (!t.Contains("INDEX", StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    int page = collector.GetStartPageIndex(p);
+                    if (page == idxPage1 || page == idxPage2)
+                    {
+                        indexPara = p;
+                        break;
+                    }
+                }
+
+                if (indexPara == null)
+                    continue; // this hearing doesn't have an index section we can recognize
+
+                // Typically the placeholder is on the next line/paragraph after "INDEX"
+                // We'll look at the next 2 paragraphs to be safe.
+                var body = indexPara.ParentNode as Body;
+                if (body == null)
+                    continue;
+
+                int idx = body.Paragraphs.IndexOf(indexPara);
+
+                // Look in the next couple of paragraphs for the placeholder
+                Paragraph? placeholderPara = null;
+                for (int offset = 1; offset <= 2; offset++)
+                {
+                    int pi = idx + offset;
+                    if (pi >= body.Paragraphs.Count) break;
+
+                    var candidate = body.Paragraphs[pi];
+                    string candText = candidate.ToString(SaveFormat.Text);
+
+                    if (candText.Contains("[VOLUME - DO NOT DELETE]", StringComparison.OrdinalIgnoreCase))
+                    {
+                        placeholderPara = candidate;
+                        break;
+                    }
+                }
+
+                if (placeholderPara == null)
+                    continue;
+
+                // Build the two lines:
+                // "VOLUME X (Pages A - B)"
+                // "Month d, yyyy"
+                string volumeLine = $"VOLUME {volume.VolumeNumber} (Pages {hearing.StartPage} - {hearing.EndPage})";
+                string dateLine = hearing.SortDate.ToString("MMMM d, yyyy", CultureInfo.InvariantCulture);
+
+                // Replace placeholder paragraph content with the two-line block
+                placeholderPara.RemoveAllChildren();
+                builder.MoveTo(placeholderPara);
+
+                // Optional: center + underline (closest equivalent to your style)
+                builder.ParagraphFormat.Alignment = ParagraphAlignment.Center;
+
+                builder.Font.Underline = Underline.Single;
+                builder.Write(volumeLine);
+            }
+        }
+
         public void GatherTranscribersForVolumes(List<VolumeInfo> volumes)
         {
             if (volumes == null || volumes.Count == 0)
