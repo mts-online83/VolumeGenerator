@@ -504,18 +504,15 @@ namespace VolumeGeneratorApp.Oregon
                 if (string.IsNullOrWhiteSpace(vol.OutputPath))
                     continue;
 
-                // Build the display list for this volume (date||transcriber entries)
-                var entries = service.GetDateAndTranscriberForVolume(vol.OutputPath);
+                // maps transcriber to the correct hearing date using page ranges
+                var entries = service.GetDateAndTranscriberForVolume(vol.OutputPath, vol);
 
-                using (var frm = new frmTranscribers(
-                    $"Volume {vol.VolumeNumber}",
-                    entries))
+                using (var frm = new frmTranscribers($"Volume {vol.VolumeNumber}", entries))
                 {
                     if (frm.ShowDialog(owner) != DialogResult.OK)
-                        return; // user cancelled out of the workflow
+                        return;
 
-                    // Store the user's decision (can be blank)
-                    vol.SelectedTranscriber = frm.SelectedTranscriber;
+                    vol.SelectedTranscriber = frm.SelectedTranscriber; // property you added
                 }
             }
         }

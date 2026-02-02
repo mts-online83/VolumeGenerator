@@ -40,9 +40,9 @@
             // lblOutput
             // 
             lblOutput.Font = new Font("Tahoma", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lblOutput.Location = new Point(12, 181);
+            lblOutput.Location = new Point(12, 272);
             lblOutput.Name = "lblOutput";
-            lblOutput.Size = new Size(590, 167);
+            lblOutput.Size = new Size(590, 210);
             lblOutput.TabIndex = 0;
             lblOutput.Text = "label1";
             // 
@@ -51,14 +51,14 @@
             label1.Font = new Font("Tahoma", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label1.Location = new Point(12, 20);
             label1.Name = "label1";
-            label1.Size = new Size(645, 161);
+            label1.Size = new Size(715, 252);
             label1.TabIndex = 1;
             label1.Text = resources.GetString("label1.Text");
             // 
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(9, 372);
+            label2.Location = new Point(13, 496);
             label2.Name = "label2";
             label2.Size = new Size(111, 15);
             label2.TabIndex = 2;
@@ -66,7 +66,7 @@
             // 
             // txtTranscriber
             // 
-            txtTranscriber.Location = new Point(157, 369);
+            txtTranscriber.Location = new Point(161, 493);
             txtTranscriber.Name = "txtTranscriber";
             txtTranscriber.Size = new Size(278, 23);
             txtTranscriber.TabIndex = 3;
@@ -75,7 +75,7 @@
             // btnContinue
             // 
             btnContinue.Enabled = false;
-            btnContinue.Location = new Point(447, 361);
+            btnContinue.Location = new Point(451, 485);
             btnContinue.Name = "btnContinue";
             btnContinue.Size = new Size(98, 39);
             btnContinue.TabIndex = 4;
@@ -85,7 +85,7 @@
             // 
             // btnCancel
             // 
-            btnCancel.Location = new Point(551, 361);
+            btnCancel.Location = new Point(555, 485);
             btnCancel.Name = "btnCancel";
             btnCancel.Size = new Size(98, 39);
             btnCancel.TabIndex = 5;
@@ -96,7 +96,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(664, 420);
+            ClientSize = new Size(734, 547);
             Controls.Add(btnCancel);
             Controls.Add(btnContinue);
             Controls.Add(txtTranscriber);

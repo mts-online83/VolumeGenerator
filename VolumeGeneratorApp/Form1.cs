@@ -53,7 +53,7 @@ namespace VolumeGeneratorApp
             var volumes = service.SplitLastMergedIntoVolumes(maxPages);
 
             // 3) Jurisdiction specific processing
-            string jurisdiction = cboJurisdiction.SelectedItem?.ToString() ?? "";
+            string jurisdiction = "Oregon";
 
             switch (jurisdiction)
             {
@@ -78,8 +78,6 @@ namespace VolumeGeneratorApp
         private void RunOregonWorkflow(string folderPath, string mergedDocPath, List<VolumeInfo> volumes, VolumeService service)
         {
             var coverIndexFiller = new OregonFillCoverIndex();
-            coverIndexFiller.GatherTranscribersForVolumes(volumes);
-
 
             var oregon = new OregonWorkFlow(); // your Oregon.cs class
 

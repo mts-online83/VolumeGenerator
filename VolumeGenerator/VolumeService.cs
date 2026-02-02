@@ -1,4 +1,5 @@
 ﻿using Aspose.Words;
+using Aspose.Words.Layout;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -284,76 +285,57 @@ namespace VolumeGenerator
         /// Returns entries like: "04/09/2021||Jane Smith".
         /// Also stores them in VolumeDateTranscriberData keyed by file name.
         /// </summary>
-        public List<string> GetDateAndTranscriberForVolume(string volumePath)
+        public List<string> GetDateAndTranscriberForVolume(string volumeDocPath, VolumeInfo volumeInfo)
         {
-            if (string.IsNullOrWhiteSpace(volumePath))
-                throw new ArgumentException("volumePath is required.", nameof(volumePath));
-            if (!File.Exists(volumePath))
-                throw new FileNotFoundException("Volume document not found.", volumePath);
+            var doc = new Document(volumeDocPath);
+            doc.UpdatePageLayout();
 
-            var doc = new Document(volumePath);
+            var collector = new LayoutCollector(doc);
 
-            var dateAndTranscriber = new List<string>();
+            var results = new List<string>();
 
-            const string phrase = "commencing on the";
-
-            // PASS 1: collect all hearing dates
-            foreach (Paragraph para in doc.GetChildNodes(NodeType.Paragraph, true))
+            foreach (var entry in volumeInfo.Entries.OrderBy(e => e.StartPage))
             {
-                string text = para.ToString(SaveFormat.Text).Trim();
-                if (string.IsNullOrEmpty(text))
-                    continue;
+                // Convert merged-global pages to volume-local pages
+                int localStart = entry.StartPage - volumeInfo.StartPage + 1;
+                int localEnd = entry.EndPage - volumeInfo.StartPage + 1;
 
-                int idx = text.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
-                if (idx >= 0)
-                {
-                    string after = text.Substring(idx + phrase.Length).Trim();
+                string transcriber = FindFirstTranscriberInPageRange(doc, collector, localStart, localEnd);
 
-                    var parsedDate = ParseHearingDate(after);
-                    if (parsedDate.HasValue)
-                    {
-                        string formatted = parsedDate.Value.ToString("MM/dd/yyyy");
-                        dateAndTranscriber.Add(formatted);
-                    }
-                }
+                // If nothing found, keep blank (or default to "escribers" if you prefer)
+                string dateStr = entry.SortDate.ToString("MM-dd-yyyy", CultureInfo.InvariantCulture);
+
+                results.Add($"{dateStr}||{transcriber}".TrimEnd('|'));
             }
 
-            // PASS 2: find TAB + "Date" lines and append transcriber names
-            int nameIndex = 0;
-            const string tabDate = "\tDate";
+            return results;
+        }
 
+        private string FindFirstTranscriberInPageRange(Document doc, LayoutCollector collector, int startPage, int endPage)
+        {
             foreach (Paragraph para in doc.GetChildNodes(NodeType.Paragraph, true))
             {
-                string text = para.ToString(SaveFormat.Text).Trim();
-                if (string.IsNullOrEmpty(text))
+                int page = collector.GetStartPageIndex(para);
+                if (page < startPage || page > endPage)
                     continue;
 
-                if (text.IndexOf(tabDate, StringComparison.OrdinalIgnoreCase) < 0)
+                string line = para.ToString(SaveFormat.Text).Trim();
+
+                // match: vbTab & "Date"
+                if (line.IndexOf("\tDate", StringComparison.OrdinalIgnoreCase) < 0)
                     continue;
 
-                var parts = text.Split('\t');
+                // first value before tab is the transcriber name
+                string[] parts = line.Split('\t');
                 if (parts.Length > 0)
                 {
-                    string transcriberName = parts[0].Trim();
-
-                    if (nameIndex < dateAndTranscriber.Count)
-                    {
-                        dateAndTranscriber[nameIndex] =
-                            dateAndTranscriber[nameIndex] + "||" + transcriberName;
-                        nameIndex++;
-                    }
-                    else
-                    {
-                        // More "tab+Date" lines than dates; ignore extras for now
-                    }
+                    string name = parts[0].Trim();
+                    if (!string.IsNullOrWhiteSpace(name))
+                        return name; // FIRST match in that hearing’s page range
                 }
             }
 
-            // Store for later use (keyed by file name only)
-            var key = Path.GetFileName(volumePath);
-            VolumeDateTranscriberData[key] = dateAndTranscriber;
-
-            return dateAndTranscriber;
+            return ""; // not found for that hearing
         }
 
         private static DateTime? ParseHearingDate(string rawText)

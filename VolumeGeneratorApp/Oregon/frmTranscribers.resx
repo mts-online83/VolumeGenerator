@@ -118,9 +118,15 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="label1.Text" xml:space="preserve">
-    <value>Below are the following hearing dates contained in this volume along with the transcriber who transcribed that date.  If only one transcriber's name appeared, please type in their name below in the following format.  If multiple transcriber names appear, leave it blank and hit "Okay":
+    <value>Below are the hearing dates in this volume and the transcriber for each.
 
-LastnameFirstname: smithjohn
-</value>
+If all hearings were transcribed by the same person, the field below is auto-filled.
+Please review and correct it if necessary.
+Format: lastnamefirstname (lowercase) — example: smithjohn
+
+If more than one transcriber appears, the field below is auto-filled to be "escribers".
+Please change that value if it is not correct.
+
+After verifying the name is correct, please click on "Continue"</value>
   </data>
 </root>
