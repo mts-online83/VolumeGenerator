@@ -31,13 +31,10 @@
             txtFolderPath = new TextBox();
             btnBrowse = new Button();
             btnMerge = new Button();
-            numMaxPages = new NumericUpDown();
             label2 = new Label();
-            label3 = new Label();
             btnReset = new Button();
             btnHelp = new Button();
             lblOutput = new Label();
-            ((System.ComponentModel.ISupportInitialize)numMaxPages).BeginInit();
             SuspendLayout();
             // 
             // txtFolderPath
@@ -46,6 +43,7 @@
             txtFolderPath.Name = "txtFolderPath";
             txtFolderPath.Size = new Size(335, 23);
             txtFolderPath.TabIndex = 0;
+            txtFolderPath.TextChanged += txtFolderPath_TextChanged;
             // 
             // btnBrowse
             // 
@@ -59,6 +57,7 @@
             // 
             // btnMerge
             // 
+            btnMerge.Enabled = false;
             btnMerge.Location = new Point(117, 141);
             btnMerge.Name = "btnMerge";
             btnMerge.Size = new Size(104, 27);
@@ -66,16 +65,6 @@
             btnMerge.Text = "Merge";
             btnMerge.UseVisualStyleBackColor = true;
             btnMerge.Click += btnMerge_Click;
-            // 
-            // numMaxPages
-            // 
-            numMaxPages.Location = new Point(160, 83);
-            numMaxPages.Maximum = new decimal(new int[] { 300, 0, 0, 0 });
-            numMaxPages.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
-            numMaxPages.Name = "numMaxPages";
-            numMaxPages.Size = new Size(54, 23);
-            numMaxPages.TabIndex = 3;
-            numMaxPages.Value = new decimal(new int[] { 300, 0, 0, 0 });
             // 
             // label2
             // 
@@ -86,15 +75,6 @@
             label2.TabIndex = 6;
             label2.Text = "Job Folder:";
             // 
-            // label3
-            // 
-            label3.AutoSize = true;
-            label3.Location = new Point(25, 85);
-            label3.Name = "label3";
-            label3.Size = new Size(104, 15);
-            label3.TabIndex = 7;
-            label3.Text = "Pages per Volume:";
-            // 
             // btnReset
             // 
             btnReset.Location = new Point(227, 141);
@@ -103,6 +83,7 @@
             btnReset.TabIndex = 8;
             btnReset.Text = "Reset";
             btnReset.UseVisualStyleBackColor = true;
+            btnReset.Click += btnReset_Click;
             // 
             // btnHelp
             // 
@@ -130,16 +111,13 @@
             Controls.Add(lblOutput);
             Controls.Add(btnHelp);
             Controls.Add(btnReset);
-            Controls.Add(label3);
             Controls.Add(label2);
-            Controls.Add(numMaxPages);
             Controls.Add(btnMerge);
             Controls.Add(btnBrowse);
             Controls.Add(txtFolderPath);
             Name = "Form1";
             Text = "Oregon Volume Generator";
             Load += Form1_Load;
-            ((System.ComponentModel.ISupportInitialize)numMaxPages).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -149,9 +127,7 @@
         private TextBox txtFolderPath;
         private Button btnBrowse;
         private Button btnMerge;
-        private NumericUpDown numMaxPages;
         private Label label2;
-        private Label label3;
         private Button btnReset;
         private Button btnHelp;
         private Label lblOutput;

@@ -59,24 +59,6 @@ namespace VolumeGeneratorApp.Oregon
             cboState1.Items.AddRange(states);
             cboState2.Items.AddRange(states);
 
-            txtAttorney1.Text = "Jane Attorney";
-            txtFirm1.Text = "Anderson & Smith LLP";
-            txtAdd1.Text = "123 Main Street";
-            txtCity1.Text = "Portland";
-            cboState1.SelectedIndex = 6;
-            txtZip1.Text = "97204";
-            txtPhone1.Text = "(503) 555-1234";
-            txtEmail1.Text = "jane.attorney@example.com";
-
-            // Respondent
-            txtAttorney2.Text = "Robert Counselor";
-            txtFirm2.Text = "Law Offices of Robert C.";
-            txtAdd2.Text = "456 Elm Avenue";
-            txtCity2.Text = "Salem";
-            cboState2.SelectedIndex = 4;
-            txtZip2.Text = "97301";
-            txtPhone2.Text = "(503) 555-9876";
-            txtEmail2.Text = "robert.counselor@example.com";
         }
 
         private void btnCancel_Click(object sender, EventArgs e)

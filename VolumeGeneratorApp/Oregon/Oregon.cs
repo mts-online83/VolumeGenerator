@@ -2,15 +2,43 @@
 using Aspose.Words.Tables;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using VolumeGenerator;
+using static System.Collections.Specialized.BitVector32;
 
 namespace VolumeGeneratorApp.Oregon
 {
     public class OregonWorkFlow
     {
+        public string County { get; init; } = "";
+        public string Name1 { get; init; } = "";
+        public string Name2 { get; init; } = "";
+        public string Party1 { get; init; } = "";
+        public string Party2 { get; init; } = "";
+        public string CaseNumber { get; init; } = "";
+        public string AppealNumber { get; init; } = "";
+        public string AppellantAttorney { get; init; } = "";
+        public string AppellantFirm { get; init; } = "";
+        public string AppellantAddress { get; init; } = "";
+        public string AppellantCity { get; init; } = "";
+        public string AppellantState { get; init; } = "";
+        public string AppellantZip { get; init; } = "";
+        public string AppellantEmail { get; init; } = "";
+        public string AppellantPhone { get; init; } = "";
+
+        // Respondent side
+        public string RespondentAttorney { get; init; } = "";
+        public string RespondentFirm { get; init; } = "";
+        public string RespondentAddress { get; init; } = "";
+        public string RespondentCity { get; init; } = "";
+        public string RespondentState { get; init; } = "";
+        public string RespondentZip { get; init; } = "";
+        public string RespondentEmail { get; init; } = "";
+        public string RespondentPhone { get; init; } = "";
+
         public void InsertOregonCertificatesWithAspose(string mergedDocPath, frmCertCaption dataForm)
         {
             // Load merged document
@@ -42,15 +70,25 @@ namespace VolumeGeneratorApp.Oregon
 
             string cpCounty = dataForm.County;
 
-            // Start table: 1 row, 2 columns
+            // Start table
             builder.StartTable();
 
-            // FIRST CELL (left)
+            // 🔹 Remove ALL table borders
+            builder.CellFormat.Borders.ClearFormatting();
+            builder.RowFormat.Borders.ClearFormatting();
+
+            // =====================
+            // FIRST CELL (LEFT)
+            // =====================
             builder.InsertCell();
 
-            // Bottom + right border like in VBA
+            // clear inherited borders first
+            builder.CellFormat.Borders.ClearFormatting();
+
+            // Apply ONLY bottom + right
             builder.CellFormat.Borders[BorderType.Bottom].LineStyle = LineStyle.Single;
             builder.CellFormat.Borders[BorderType.Bottom].LineWidth = 0.5;
+
             builder.CellFormat.Borders[BorderType.Right].LineStyle = LineStyle.Single;
             builder.CellFormat.Borders[BorderType.Right].LineWidth = 0.5;
 
@@ -65,10 +103,12 @@ namespace VolumeGeneratorApp.Oregon
             TP(builder, 2);
             TT(builder, "\t" + dataForm.Party2 + ".");
 
-            // SECOND CELL (right)
+            // =====================
+            // SECOND CELL (RIGHT)
+            // =====================
             builder.InsertCell();
 
-            // Clear borders so this cell has no borders
+            // ensure NO borders
             builder.CellFormat.Borders.ClearFormatting();
 
             SS(builder, "ESFilingNormalSingle");
@@ -78,9 +118,10 @@ namespace VolumeGeneratorApp.Oregon
             TP(builder, 2);
             TT(builder, "CA " + dataForm.AppealNumber);
 
-            // End row + table
+            // Finish table
             builder.EndRow();
             builder.EndTable();
+
 
             // Move to end of document again
             builder.MoveToDocumentEnd();
@@ -309,8 +350,10 @@ namespace VolumeGeneratorApp.Oregon
             tbl = builder.EndTable();
             tbl.ClearBorders();
         }
-        private static void SS(DocumentBuilder builder, string styleName)
+        private void SS(DocumentBuilder builder, string styleName)
         {
+            builder.ParagraphFormat.ClearFormatting();
+            builder.Font.ClearFormatting();
             builder.ParagraphFormat.StyleName = styleName;
         }
 
@@ -328,6 +371,7 @@ namespace VolumeGeneratorApp.Oregon
                 builder.Writeln();
             }
         }
+
         private void InsertAttorneyInfo(
             DocumentBuilder builder,
             string party,
@@ -341,20 +385,44 @@ namespace VolumeGeneratorApp.Oregon
             string email)
         {
             SS(builder, "ESFilingNormalSingle");
-            TT(builder, "Attorney for " + party + ":");
-            TP(builder, 1);
-            TT(builder, attorney);
-            TP(builder, 1);
-            TT(builder, firm);
-            TP(builder, 1);
-            TT(builder, address);
-            TP(builder, 1);
-            TT(builder, city + ", " + state + "  " + zip);
-            TP(builder, 1);
-            TT(builder, phone);
-            TP(builder, 1);
-            TT(builder, email);
+
+            WriteLine(builder, $"Attorney for {party}:");
+            WriteLine(builder, attorney);
+            WriteLine(builder, firm);
+            WriteLine(builder, address);
+            WriteLine(builder, FormatCityStateZip(city, state, zip));
+            WriteLine(builder, phone);
+            WriteLine(builder, email);
         }
+
+        private string FormatCityStateZip(string city, string state, string zip)
+        {
+            var parts = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(city))
+                parts.Add(city.Trim());
+
+            if (!string.IsNullOrWhiteSpace(state))
+                parts.Add(state.Trim());
+
+            var result = string.Join(", ", parts);
+
+            if (!string.IsNullOrWhiteSpace(zip))
+                result += (result.Length > 0 ? "  " : "") + zip.Trim();
+
+            return result;
+        }
+
+        private void WriteLine(DocumentBuilder builder, string text)
+        {
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                TT(builder, text.Trim());
+                TP(builder, 1);
+            }
+        }
+
+
 
         private void InsertCertLine(DocumentBuilder builder)
         {
@@ -515,6 +583,158 @@ namespace VolumeGeneratorApp.Oregon
                     vol.SelectedTranscriber = frm.SelectedTranscriber; // property you added
                 }
             }
+        }
+
+        public string CreateCaptionDocument(string outputFolder, OregonWorkFlow appearances, OregonWorkFlow data)
+        {
+            if (data == null) throw new ArgumentNullException(nameof(data));
+            if (string.IsNullOrWhiteSpace(outputFolder)) throw new ArgumentException("outputFolder required.");
+
+            Directory.CreateDirectory(outputFolder);
+
+            // Use your appeal number in the filename if you want
+            string appeal = MakeSafeFilePart(data.AppealNumber);
+            string fileName = "Request for Extension of Time.docx";
+            string outputPath = Path.Combine(outputFolder, fileName);
+
+            var doc = new Document();
+            var builder = new DocumentBuilder(doc);
+
+            // 1-row, 3-col table
+            Table tbl = builder.StartTable();
+            builder.InsertCell(); // col 1
+            builder.InsertCell(); // col 2
+            builder.InsertCell(); // col 3
+            builder.EndRow();
+            builder.EndTable();
+
+            // No borders
+            tbl.SetBorders(LineStyle.None, 0, System.Drawing.Color.Empty);
+
+            // Column widths (inches -> points)
+            tbl.FirstRow.Cells[0].CellFormat.Width = ConvertUtil.InchToPoint(3.25);
+            tbl.FirstRow.Cells[1].CellFormat.Width = ConvertUtil.InchToPoint(0.19);
+            tbl.FirstRow.Cells[2].CellFormat.Width = ConvertUtil.InchToPoint(2.75);
+            tbl.AutoFit(AutoFitBehavior.FixedColumnWidths);
+
+            var cell1 = tbl.FirstRow.Cells[0];
+            var cell2 = tbl.FirstRow.Cells[1];
+            var cell3 = tbl.FirstRow.Cells[2];
+
+            // Column 1 text (matches your VBA intent)
+            builder.MoveTo(cell1.FirstParagraph);
+            // If you have styles available, apply them here:
+            // builder.ParagraphFormat.StyleName = "ESFilingNormalSingle";
+
+            builder.Writeln($"{data.Name1},");
+            builder.Writeln();
+            builder.Writeln($"\t{data.Party1},");
+            builder.Writeln();
+            builder.Writeln("\t\tv.");
+            builder.Writeln();
+            builder.Writeln($"{data.Name2},");
+            builder.Writeln();
+            builder.Write($"\t{data.Party2}.");
+
+            // Column 3 text
+            builder.MoveTo(cell3.FirstParagraph);
+            // builder.ParagraphFormat.StyleName = "ESFilingNormalSingle";
+
+            builder.Writeln($"{data.County} County Circuit Court");
+            builder.Writeln($"Case No. {data.CaseNumber}");
+            builder.Writeln();
+            builder.Write($"CA {data.AppealNumber}");
+
+            // Column 2 stacked ")"
+            int approxLines = Math.Max(6, cell1.Paragraphs.Count);
+            builder.MoveTo(cell2.FirstParagraph);
+            // builder.ParagraphFormat.StyleName = "ESFilingNormalSingle";
+
+            for (int i = 0; i < approxLines; i++)
+                builder.Writeln(")");
+
+            doc.Save(outputPath, SaveFormat.Docx);
+            return outputPath;
+        }
+
+        private static string MakeSafeFilePart(string input)
+        {
+            foreach (char c in Path.GetInvalidFileNameChars())
+                input = input.Replace(c, '_');
+            return input.Trim();
+        }
+        public string CreateNoPaymentLetter(string outputFolder)
+        {
+            if (string.IsNullOrWhiteSpace(outputFolder)) throw new ArgumentException("outputFolder is required.", nameof(outputFolder));
+
+            Directory.CreateDirectory(outputFolder);
+
+            string outputPath = Path.Combine(outputFolder, "Request for Payment.docx");
+
+            var doc = new Document();
+            var builder = new DocumentBuilder(doc);
+
+            // If you have a specific style, apply it here
+            // builder.ParagraphFormat.StyleName = "ESFilingNormalSingle";
+
+            // "nopaystart" bookmark
+            builder.StartBookmark("nopaystart");
+            builder.EndBookmark("nopaystart");
+
+            // Date line (MMMM d, yyyy)
+            builder.Writeln(DateTime.Now.ToString("MMMM d, yyyy", CultureInfo.InvariantCulture));
+            TP(builder, 4);
+
+            // Address block (bookmark + optional text)
+            InsertBookmarkWithOptionalText(builder, "nopay_address");
+            TP(builder, 3);
+
+            // Caption block (bookmark + optional text)
+            InsertBookmarkWithOptionalText(builder, "nopay_caption");
+            TP(builder, 1);
+
+            // County
+            builder.Write("County: ");
+            InsertBookmarkWithOptionalText(builder, "nopay_county");
+            TP(builder, 1);
+
+            // Case number
+            builder.Write("County Case No. ");
+            InsertBookmarkWithOptionalText(builder, "nopay_casenumber");
+            TP(builder, 1);
+
+            // Appeal number
+            builder.Write("(Appellate Case No.) ");
+            InsertBookmarkWithOptionalText(builder, "nopay_appealnumber");
+            TP(builder, 4);
+
+            builder.Writeln("Whom It May Concern:");
+            TP(builder, 2);
+
+            builder.Writeln("Please be advised the transcript in this matter has not been produced because appellant has not responded to my requests to make the financial arrangements necessary for transcript preparation.");
+            TP(builder, 3);
+
+            builder.Writeln("Sincerely,");
+            TP(builder, 1);
+
+            builder.Writeln("eScribers");
+
+            // "nopayend" bookmark
+            builder.StartBookmark("nopayend");
+            builder.EndBookmark("nopayend");
+
+            // Update fields if you ever add any
+            doc.UpdateFields();
+
+            doc.Save(outputPath, SaveFormat.Docx);
+            return outputPath;
+        }
+
+        private static void InsertBookmarkWithOptionalText(DocumentBuilder builder, string bookmarkName)
+        {
+            builder.StartBookmark(bookmarkName);
+            builder.Write(bookmarkName);
+            builder.EndBookmark(bookmarkName);
         }
     }
 }

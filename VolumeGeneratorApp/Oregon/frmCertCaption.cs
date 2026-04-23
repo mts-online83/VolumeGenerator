@@ -15,6 +15,7 @@ namespace VolumeGeneratorApp.Oregon
 
     public partial class frmCertCaption : Form
     {
+        private OregonCaptionData? _scrapedCaptionData;
         public string County => cboCounty.Text;
         public string Name1 => txtName1.Text;
         public string Name2 => txtName2.Text;
@@ -23,9 +24,21 @@ namespace VolumeGeneratorApp.Oregon
         public string CaseNumber => txtCaseNumbers.Text;
         public string AppealNumber => txtAppealNumbers.Text;
 
-        public frmCertCaption()
+        public frmCertCaption(string mergedDocPath)
         {
             InitializeComponent();
+            var scraper = new OregonCaptionScraper();
+            _scrapedCaptionData = scraper.ParseFirstPage(mergedDocPath);
+            if (_scrapedCaptionData != null)
+            {
+                cboCounty.Text = _scrapedCaptionData.County;
+                txtName1.Text = _scrapedCaptionData.Name1;
+                txtName2.Text = _scrapedCaptionData.Name2;
+                cboParty1.Text = _scrapedCaptionData.Party1;
+                cboParty2.Text = _scrapedCaptionData.Party2;
+                txtCaseNumbers.Text = _scrapedCaptionData.CaseNumber;
+                txtAppealNumbers.Text = _scrapedCaptionData.AppealNumber;
+            }
         }
 
         private void frmCertCaption_Load(object sender, EventArgs e)
@@ -51,15 +64,6 @@ namespace VolumeGeneratorApp.Oregon
                 "Deschutes",
                 "Linn"
             });
-
-            cboCounty.Text = "Multnomah";
-            txtName1.Text = "John Smith";
-            txtName2.Text = "Mary Johnson";
-            cboParty1.SelectedIndex = 0;
-            cboParty2.SelectedIndex = 1;
-            txtCaseNumbers.Text = "C-12345";
-            txtAppealNumbers.Text = "A-6789";
-
         }
 
         private void btnConfirm_Click(object sender, EventArgs e)

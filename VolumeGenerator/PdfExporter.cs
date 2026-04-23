@@ -16,7 +16,7 @@ namespace VolumeGenerator
         /// </summary>
         /// <param name="mergedDocPath">Full path to MERGED_DOC.docx</param>
         /// <param name="outputFolder">Folder to write the PDFs into</param>
-        public void ExportCertificates(string mergedDocPath, string outputFolder)
+        public void ExportCertificates(string mergedDocPath, string outputFolder, string appealnum)
         {
             if (string.IsNullOrWhiteSpace(mergedDocPath))
                 throw new ArgumentException("mergedDocPath is required.", nameof(mergedDocPath));
@@ -39,7 +39,7 @@ namespace VolumeGenerator
                 collector,
                 "certoffiling",
                 "certoffilingbottom",
-                Path.Combine(outputFolder, "Certificate of Filing.pdf"));
+                Path.Combine(outputFolder, appealnum + "_Certificate of Filing.pdf"));
 
             // 2) Certificate of Preparation
             ExportBookmarkRangeToPdf(
@@ -47,7 +47,7 @@ namespace VolumeGenerator
                 collector,
                 "certofpreparation",
                 "certofpreparationbottom",
-                Path.Combine(outputFolder, "Certificate of Preparation.pdf"));
+                Path.Combine(outputFolder, appealnum + "_Certificate of Preparation.pdf"));
         }
 
         /// <summary>

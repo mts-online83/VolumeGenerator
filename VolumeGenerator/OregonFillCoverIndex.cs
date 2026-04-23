@@ -62,6 +62,9 @@ namespace VolumeGenerator
                 doc.UpdatePageLayout();
                 doc.UpdateFields();
                 doc.Save(newPath, SaveFormat.Docx);
+                // Create matching PDF path and Save PDF
+                var pdfPath = Path.ChangeExtension(newPath, ".pdf");
+                doc.Save(pdfPath, SaveFormat.Pdf);
 
                 // Optional: delete old "Volume_#.docx"
                 if (!string.Equals(newPath, vol.OutputPath, StringComparison.OrdinalIgnoreCase))
@@ -211,7 +214,7 @@ namespace VolumeGenerator
                     var candidate = body.Paragraphs[pi];
                     string candText = candidate.ToString(SaveFormat.Text);
 
-                    if (candText.Contains("[VOLUME - DO NOT DELETE]", StringComparison.OrdinalIgnoreCase))
+                    if (candText.Contains("VOLUME", StringComparison.OrdinalIgnoreCase))
                     {
                         placeholderPara = candidate;
                         break;

@@ -1,6 +1,7 @@
 using Aspose.Words;
 using Aspose.Words.Tables;
 using System;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Windows.Forms;
@@ -14,6 +15,9 @@ namespace VolumeGeneratorApp
     {
         private string _cpCountyFromCertCaption = "";
         private string _cpAppeal = "";
+        private OregonCaptionData? _oregonCaptionData;
+        private OregonWorkFlow? _oregonAppearances;
+
         public Form1()
         {
             InitializeComponent();
@@ -41,7 +45,7 @@ namespace VolumeGeneratorApp
                 return;
             }
 
-            int maxPages = (int)numMaxPages.Value;
+            int maxPages = 300;
 
             var service = new VolumeService();
 
@@ -49,31 +53,15 @@ namespace VolumeGeneratorApp
             lblOutput.Text = "Merging transcripts into one document";
             string mergedDocPath = service.MergeWordDocsInFolder(folderPath);
 
+            lblOutput.Text += Environment.NewLine + "Splitting master document into separate volumes";
             // 2) Split the merged doc into volumes based on maxPages
             var volumes = service.SplitLastMergedIntoVolumes(maxPages);
 
             // 3) Jurisdiction specific processing
-            string jurisdiction = "Oregon";
+            RunOregonWorkflow(folderPath, mergedDocPath, volumes, service);
 
-            switch (jurisdiction)
-            {
-                case "Oregon":
-                    RunOregonWorkflow(folderPath, mergedDocPath, volumes, service);
-                    break;
-
-                case "CA Superior":
-                    //RunCaliforniaSuperiorWorkflow(folderPath, mergedDocPath, volumes);
-                    break;
-
-                default:
-                    MessageBox.Show(
-                        $"No workflow implemented for jurisdiction: {jurisdiction}",
-                        "Jurisdiction not supported",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
-                    break;
-            }
-
+            lblOutput.Text += Environment.NewLine + "Processing complete.  Please click reset to start a new job.";
+            txtFolderPath.Text = null;
         }
         private void RunOregonWorkflow(string folderPath, string mergedDocPath, List<VolumeInfo> volumes, VolumeService service)
         {
@@ -81,15 +69,28 @@ namespace VolumeGeneratorApp
 
             var oregon = new OregonWorkFlow(); // your Oregon.cs class
 
+            lblOutput.Text += Environment.NewLine + "Generating Certificate of Filing and Preparation";
             // 3) Insert Cert of Filing and Preparation
-            using (var captionForm = new frmCertCaption())
+            
+            using (var captionForm = new frmCertCaption(mergedDocPath))
             {
+                
+
                 if (captionForm.ShowDialog(this) != DialogResult.OK)
                     return;
 
                 _cpCountyFromCertCaption = captionForm.County;
                 _cpAppeal = captionForm.AppealNumber;
-
+                _oregonCaptionData = new OregonCaptionData
+                {
+                    County = captionForm.County,
+                    Name1 = captionForm.Name1,
+                    Name2 = captionForm.Name2,
+                    Party1 = captionForm.Party1,
+                    Party2 = captionForm.Party2,
+                    CaseNumber = captionForm.CaseNumber,
+                    AppealNumber = captionForm.AppealNumber
+                };
                 oregon.InsertOregonCertificatesWithAspose(mergedDocPath, captionForm);
             }
 
@@ -99,33 +100,84 @@ namespace VolumeGeneratorApp
                 if (appearancesForm.ShowDialog(this) != DialogResult.OK)
                     return;
 
+                _oregonAppearances = new OregonWorkFlow
+                {
+
+                    AppellantAttorney = appearancesForm.AppellantAttorney,
+                    AppellantFirm = appearancesForm.AppellantFirm,
+                    AppellantAddress = appearancesForm.AppellantAddress,
+                    AppellantCity = appearancesForm.AppellantCity,
+                    AppellantState = appearancesForm.AppellantState,
+                    AppellantZip = appearancesForm.AppellantZip,
+                    AppellantEmail = appearancesForm.AppellantEmail,
+                    AppellantPhone = appearancesForm.AppellantPhone,
+
+                    RespondentAttorney = appearancesForm.RespondentAttorney,
+                    RespondentFirm = appearancesForm.RespondentFirm,
+                    RespondentAddress = appearancesForm.RespondentAddress,
+                    RespondentCity = appearancesForm.RespondentCity,
+                    RespondentState = appearancesForm.RespondentState,
+                    RespondentZip = appearancesForm.RespondentZip,
+                    RespondentEmail = appearancesForm.RespondentEmail,
+                    RespondentPhone = appearancesForm.RespondentPhone
+                };
+
                 oregon.InsertOregonCertAppearancesWithAspose(mergedDocPath, appearancesForm, _cpCountyFromCertCaption);
             }
 
             // 5) Add date / volume / page ranges to cert pages
-            lblOutput.Text += Environment.NewLine + "Generating Certificate of Filing and Preparation";
+            
 
             var lines = oregon.BuildVolumeListing(volumes);
             oregon.InsertLinesAtBookmark(mergedDocPath, "certofprep", lines);
             oregon.InsertLinesAtBookmark(mergedDocPath, "certofprep2", lines);
 
+            lblOutput.Text += Environment.NewLine + "Generating PDFs for Certificate pages";
             // 6) Export cert PDFs
             var exporter = new PdfExporter();
             string certOutputFolder = Path.Combine(folderPath, "Certificates");
-            exporter.ExportCertificates(mergedDocPath, certOutputFolder);
+            exporter.ExportCertificates(mergedDocPath, certOutputFolder, _cpAppeal);
 
             // 7) Get Transcriber names involved for file renaming purposes used later
             // Step 7: Ask user for transcriber override per volume
             oregon.CollectTranscriberOverridesPerVolume(this, volumes, service);
 
-
+            lblOutput.Text += Environment.NewLine + "Filling in cover pages and index pages with the proper volume and page range information";
             // 8) Fill cover/index info in Volume_#.docx
             coverIndexFiller.ProcessAllVolumeDocs(volumes, _cpAppeal);
+
+            lblOutput.Text += Environment.NewLine + "Generating the Extension of Time and Payment Documents";
+            // 9) Generate Extension of Time and Payment Word Docx
+            if (_oregonCaptionData != null)
+            {
+                var captionBuilder = new OregonTimeExtensionDocBuilder();
+                var nopayBuilder = new OregonWorkFlow();
+                captionBuilder.CreateTimeExtensionDocument(folderPath, _oregonCaptionData, _oregonAppearances);
+                nopayBuilder.CreateNoPaymentLetter(folderPath);
+            }
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
 
+        }
+
+        private void txtFolderPath_TextChanged(object sender, EventArgs e)
+        {
+            if (txtFolderPath.Text.Length > 0)
+            {
+                btnMerge.Enabled = true;
+            }
+            else
+            {
+                btnMerge.Enabled = false;
+            }
+        }
+
+        private void btnReset_Click(object sender, EventArgs e)
+        {
+            txtFolderPath.Text = null;
+            lblOutput.Text = "Ready to process the next job.  Please click the browse button to select the job folder";
         }
     }
 }
