@@ -58,34 +58,42 @@
             // label2
             // 
             label2.AutoSize = true;
+            label2.Font = new Font("Segoe UI", 12F);
             label2.Location = new Point(13, 496);
             label2.Name = "label2";
-            label2.Size = new Size(111, 15);
+            label2.Size = new Size(147, 21);
             label2.TabIndex = 2;
             label2.Text = "Transcriber's Name:";
             // 
             // txtTranscriber
             // 
-            txtTranscriber.Location = new Point(161, 493);
+            txtTranscriber.Font = new Font("Segoe UI", 12F);
+            txtTranscriber.Location = new Point(178, 494);
             txtTranscriber.Name = "txtTranscriber";
-            txtTranscriber.Size = new Size(278, 23);
+            txtTranscriber.Size = new Size(278, 29);
             txtTranscriber.TabIndex = 3;
             txtTranscriber.TextChanged += txtTranscriber_TextChanged;
             // 
             // btnContinue
             // 
+            btnContinue.BackColor = Color.Blue;
             btnContinue.Enabled = false;
-            btnContinue.Location = new Point(451, 485);
+            btnContinue.FlatStyle = FlatStyle.Popup;
+            btnContinue.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            btnContinue.ForeColor = Color.White;
+            btnContinue.Location = new Point(492, 486);
             btnContinue.Name = "btnContinue";
             btnContinue.Size = new Size(98, 39);
             btnContinue.TabIndex = 4;
             btnContinue.Text = "Continue";
-            btnContinue.UseVisualStyleBackColor = true;
+            btnContinue.UseVisualStyleBackColor = false;
             btnContinue.Click += btnContinue_Click;
             // 
             // btnCancel
             // 
-            btnCancel.Location = new Point(555, 485);
+            btnCancel.FlatStyle = FlatStyle.Popup;
+            btnCancel.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            btnCancel.Location = new Point(596, 486);
             btnCancel.Name = "btnCancel";
             btnCancel.Size = new Size(98, 39);
             btnCancel.TabIndex = 5;
@@ -96,6 +104,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
+            BackColor = Color.White;
             ClientSize = new Size(734, 547);
             Controls.Add(btnCancel);
             Controls.Add(btnContinue);
@@ -103,8 +112,9 @@
             Controls.Add(label2);
             Controls.Add(label1);
             Controls.Add(lblOutput);
+            Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "frmTranscribers";
-            Text = "frmTranscribers";
+            Text = "Transcribers in this volume";
             Load += frmTranscribers_Load;
             ResumeLayout(false);
             PerformLayout();
