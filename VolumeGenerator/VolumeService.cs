@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace VolumeGenerator
 {
@@ -36,21 +37,35 @@ namespace VolumeGenerator
             foreach (var file in files)
             {
                 string fileName = Path.GetFileName(file);
-                string[] parts = fileName.Split('_');
 
-                DateTime sortDate;
+                DateTime sortDate = DateTime.MaxValue;
 
-                if (parts.Length >= 2)
+                // Match patterns like:
+                // 04_24_25
+                // 05-08-2025
+                // 05_09_2025
+                var match = Regex.Match(fileName, @"(\d{2})[-_](\d{2})[-_](\d{2}|\d{4})");
+
+                if (match.Success)
                 {
-                    string datePart = parts[1].Replace("-", "/");
-                    if (!DateTime.TryParse(datePart, out sortDate))
+                    int month = int.Parse(match.Groups[1].Value);
+                    int day = int.Parse(match.Groups[2].Value);
+                    int year = int.Parse(match.Groups[3].Value);
+
+                    // Handle 2-digit year
+                    if (year < 100)
+                    {
+                        year += 2000; // assumes all are 2000+
+                    }
+
+                    try
+                    {
+                        sortDate = new DateTime(year, month, day);
+                    }
+                    catch
                     {
                         sortDate = DateTime.MaxValue;
                     }
-                }
-                else
-                {
-                    sortDate = DateTime.MaxValue;
                 }
 
                 list.Add((sortDate, file));

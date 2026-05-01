@@ -246,7 +246,7 @@
             Controls.Add(progress);
             Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "Form1";
-            Text = "Oregon Volume Generator";
+            Text = "eScribers Oregon Volume Generator v1.0.1";
             Load += Form1_Load;
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             groupBox1.ResumeLayout(false);
