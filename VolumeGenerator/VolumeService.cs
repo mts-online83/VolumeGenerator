@@ -44,7 +44,7 @@ namespace VolumeGenerator
                 // 04_24_25
                 // 05-08-2025
                 // 05_09_2025
-                var match = Regex.Match(fileName, @"(\d{2})[-_](\d{2})[-_](\d{2}|\d{4})");
+                var match = Regex.Match(fileName, @"(\d{2})[-](\d{2})[-](\d{2}|\d{4})");
 
                 if (match.Success)
                 {
