@@ -172,11 +172,6 @@ namespace VolumeGeneratorApp
             progress.Value += 1;
         }
 
-        private void Form1_Load(object sender, EventArgs e)
-        {
-
-        }
-
         private void txtFolderPath_TextChanged(object sender, EventArgs e)
         {
             if (txtFolderPath.Text.Length > 0)
